@@ -1,14 +1,20 @@
 # Enemy class definition
 
+import random
+import math
+
 from functions import TextFuncs
 
 class Enemy:
-    def __init__(self, name, health, attack_power, armor, tier):
+    def __init__(self, name, health, attack_power, armor, tier, inventory=None):
         self.name = name
         self.health = health
+        self.max_health = health
         self.attack_power = attack_power
         self.armor = armor
         self.tier = tier
+        # simple inventory support for potions, etc.
+        self.inventory = inventory or []
 
     def attack(self):
         return self.attack_power
@@ -18,8 +24,37 @@ class Enemy:
         if self.health < 0:
             self.health = 0
 
+    def heal(self, amount):
+        self.health = min(self.max_health, self.health + amount)
+
     def is_alive(self):
         return self.health > 0
+
+    def decide_action(self, player):
+        """Decide the enemy's next action based on current HP and available items.
+
+        Returns one of: 'attack', 'defend', 'heal'.
+        """
+        import random
+        hp_pct = (self.health / self.max_health) if self.max_health else 0
+
+        # If very low on HP prefer to heal (if potion present) or defend
+        has_potion = any(getattr(it, 'name', None) == 'Health Potion' for it in self.inventory)
+        if hp_pct < 0.30:
+            if has_potion and random.random() < 0.75:
+                return 'heal'
+            if random.random() < 0.6:
+                return 'defend'
+            return 'attack'
+
+        # If moderately hurt, sometimes defend
+        if hp_pct < 0.6:
+            if random.random() < 0.35:
+                return 'defend'
+            return 'attack'
+
+        # otherwise attack
+        return 'attack'
     
 enemy_names = {
     "tier1": ["Goblin", "Skeleton", "Zombie", "Bandit", "Wolf", "Slime", "Bat", "Spider", "Rat", "Kobold"],
@@ -37,12 +72,63 @@ enemy_stats = {
     "tier5": {"health": 1200, "attack_power": 120, "armor": 40}
 }
 
+def get_difficulty_multiplier(difficulty=None):
+    """Return the scaling multiplier for a given difficulty (defaults to GameplaySettings.GLOBAL_DIFFICULTY)."""
+    from settings import GameplaySettings
+    d = difficulty if (difficulty is not None) else GameplaySettings.GLOBAL_DIFFICULTY
+    return 1.0 + (d - 3) * 0.15
+
+
 def generate_enemy(tier):
     import random
+    from items import health_potion, iron_sword, leather_armor, plate_armor, steel_axe
+    from settings import GameplaySettings
+
     name = random.choice(enemy_names[tier])
     stats = enemy_stats[tier]
-    return Enemy(name, stats["health"], stats["attack_power"], stats["armor"], tier)
 
-# Example usage:
-# enemy = generate_enemy("tier1")
-# TextFuncs.var_speed_print(f"Generated random enemy: {enemy.name} with " + TextFuncs.color_text(f"{enemy.health} HP", "red") + " and " + TextFuncs.color_text(f"{enemy.attack_power} AP", "blue"), 0.03, 0.05)
+    multiplier = get_difficulty_multiplier()
+
+    base_hp = stats["health"] * multiplier
+    base_attack = max(1, int(stats["attack_power"] * multiplier))
+    base_armor = max(0, int(stats["armor"] * multiplier))
+
+    hp = math.ceil(random.uniform(base_hp - (base_hp * 0.1), base_hp + (base_hp * 0.1)))
+    e = Enemy(name, hp, base_attack, base_armor, tier)
+
+    # Reward scaling by tier and difficulty
+    xp_table = {"tier1": 8, "tier2": 25, "tier3": 60, "tier4": 150, "tier5": 400}
+    gold_table = {"tier1": (5, 15), "tier2": (20, 50), "tier3": (50, 120), "tier4": (150, 400), "tier5": (500, 1500)}
+
+    base_xp = xp_table.get(tier, 10)
+    e.xp_reward = max(1, int(base_xp * multiplier))
+
+    gmin, gmax = gold_table.get(tier, (5, 10))
+    gmin = max(1, int(gmin * multiplier))
+    gmax = max(gmin, int(gmax * multiplier))
+    e.gold_reward = random.randint(gmin, gmax)
+
+    # Ensure loot container exists
+    e.loot = []
+
+    # 25% chance to carry a health potion so some enemies can heal
+    if random.random() < 0.25:
+        e.inventory.append(health_potion)
+
+    # Loot table with weights per tier (rarer items have lower weights)
+    LOOT_TABLE = {
+        "tier1": [(health_potion, 70), (leather_armor, 10), (iron_sword, 5)],
+        "tier2": [(health_potion, 60), (leather_armor, 15), (iron_sword, 12), (steel_axe, 8)],
+        "tier3": [(health_potion, 40), (leather_armor, 20), (iron_sword, 15), (steel_axe, 15), (plate_armor, 5)],
+        "tier4": [(health_potion, 30), (leather_armor, 20), (iron_sword, 20), (steel_axe, 20), (plate_armor, 10)],
+        "tier5": [(health_potion, 20), (leather_armor, 15), (iron_sword, 20), (steel_axe, 20), (plate_armor, 25)],
+    }
+
+    # chance to drop an item increases with difficulty
+    drop_chance = 0.12 * multiplier
+    if random.random() < drop_chance:
+        choices, weights = zip(*LOOT_TABLE.get(tier, LOOT_TABLE["tier1"]))
+        chosen = random.choices(choices, weights=weights, k=1)[0]
+        e.loot.append(chosen)
+
+    return e

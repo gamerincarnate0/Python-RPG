@@ -6,7 +6,7 @@ from functions import TextFuncs
 player = {
     "name": PlayerSettings.PLAYER_NAME,
     "level": 1,
-    "health": 40,
+    "health": 100,
     "max_health": 100,
     "mana": 50,
     "max_mana": 50,
@@ -17,6 +17,9 @@ player = {
     "gold": PlayerSettings.STARTING_GOLD,
     "inventory": [],
     "inventory_capacity": PlayerSettings.INVENTORY_CAPACITY,
+    "equipment": {"weapon": None, "armor": None, "accessory": None},
+    "attack_power_bonus": 0,
+    "armor_bonus": 0,
     "skills": [],
     "effects": []
 }

@@ -1,11 +1,22 @@
 # Item class definition
 
 class Item:
-    def __init__(self, name, item_type, effect, value):
+    def __init__(self, name, item_type, effect, value, rarity='common'):
         self.name = name
         self.item_type = item_type  # eg, "consumable", "equipment"
         self.effect = effect        # eg, {"health": +50}
         self.value = value          # eg, gold value
+        # Rarity: common, uncommon, rare, epic, legendary
+        self.rarity = rarity
+
+    def description(self):
+        """Return a multi-line description of the item for tooltips and UI."""
+        parts = [f"Name: {self.name}", f"Type: {self.item_type}", f"Rarity: {self.rarity}", f"Value: {self.value} gold"]
+        if self.effect:
+            eff_lines = [f"  {k}: {v}" for k, v in self.effect.items()]
+            parts.append("Effects:")
+            parts.extend(eff_lines)
+        return "\n".join(parts)
 
     def _is_mapping(self, target):
         return isinstance(target, dict)
@@ -56,22 +67,22 @@ class Item:
             pass
 
 # Potion definitions
-health_potion = Item("Health Potion", "consumable", {"health": 40}, 10)
-mana_potion = Item("Mana Potion", "consumable", {"mana": 10}, 8)
-strength_elixir = Item("Strength Elixir", "consumable", {"strength": 5}, 15)
-agility_elixir = Item("Agility Elixir", "consumable", {"agility": 5}, 15)
-intelligence_elixir = Item("Intelligence Elixir", "consumable", {"intelligence": 5}, 15)
+health_potion = Item("Health Potion", "consumable", {"health": 40}, 10, rarity='common')
+mana_potion = Item("Mana Potion", "consumable", {"mana": 10}, 8, rarity='common')
+strength_elixir = Item("Strength Elixir", "consumable", {"strength": 5}, 15, rarity='uncommon')
+agility_elixir = Item("Agility Elixir", "consumable", {"agility": 5}, 15, rarity='uncommon')
+intelligence_elixir = Item("Intelligence Elixir", "consumable", {"intelligence": 5}, 15, rarity='uncommon')
 
 # Weapon definitions
-iron_sword = Item("Iron Sword", "equipment", {"attack_power": 10}, 50)
-steel_axe = Item("Steel Axe", "equipment", {"attack_power": 15}, 75)
-magic_staff = Item("Magic Staff", "equipment", {"attack_power": 12, "intelligence": 3}, 100)
+iron_sword = Item("Iron Sword", "equipment", {"attack_power": 10}, 50, rarity='uncommon')
+steel_axe = Item("Steel Axe", "equipment", {"attack_power": 15}, 75, rarity='rare')
+magic_staff = Item("Magic Staff", "equipment", {"attack_power": 12, "intelligence": 3}, 100, rarity='rare')
 
 # Armor definitions
-leather_armor = Item("Leather Armor", "equipment", {"armor": 5}, 40)
-chainmail_armor = Item("Chainmail Armor", "equipment", {"armor": 10}, 80)
-plate_armor = Item("Plate Armor", "equipment", {"armor": 15}, 120)
+leather_armor = Item("Leather Armor", "equipment", {"armor": 5}, 40, rarity='uncommon')
+chainmail_armor = Item("Chainmail Armor", "equipment", {"armor": 10}, 80, rarity='rare')
+plate_armor = Item("Plate Armor", "equipment", {"armor": 15}, 120, rarity='epic')
 
 # Jewelry definitions
-silver_ring = Item("Silver Ring", "equipment", {"mana": 10}, 30)
-gold_necklace = Item("Gold Necklace", "equipment", {"health": 20}, 60)
+silver_ring = Item("Silver Ring", "equipment", {"mana": 10}, 30, rarity='uncommon')
+gold_necklace = Item("Gold Necklace", "equipment", {"health": 20}, 60, rarity='rare')

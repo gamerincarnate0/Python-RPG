@@ -1,8 +1,8 @@
 # Application Settings
 
-APP_NAME = "MyRPG"
-VERSION = "0.2.0"
-VERSION_NAME = "Inventory and potions testing"
+APP_NAME = "Python RPG"
+VERSION = "0.8.2"
+VERSION_NAME = "Combat and UI Update!"
 DEBUG_MODE = True
 
 class UserInterfaceSettings:
@@ -29,7 +29,7 @@ class GameplaySettings:
     STAT_POINTS_PER_LEVEL = 3  # Stat points awarded per level up
     SKILL_POINTS_PER_LEVEL = 1  # Skill points awarded per level up
     LEVEL_REQUIREMENTS_BASE = 100  # Base XP required for level 1
-    LEVEL_SCALAR = 1.5  # Exponential scaling factor for level XP requirements
+    LEVEL_SCALAR = 1.2  # Exponential scaling factor for level XP requirements
 
 class PlayerSettings:
     STARTING_GOLD = 0
