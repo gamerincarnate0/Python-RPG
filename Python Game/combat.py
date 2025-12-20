@@ -22,6 +22,16 @@ def _format_with_rarity(text, rarity):
     return f"{text} ({rarity})" if rarity else text
 
 
+def enemy_is_fightable(enemy_obj):
+    """Return True if `enemy_obj` is a live enemy that can be engaged."""
+    if enemy_obj is None:
+        return False
+    try:
+        return enemy_obj.is_alive()
+    except Exception:
+        return False
+
+
 class Combat:
     """Combat manager that supports both CLI and Tkinter GUI flows.
 
