@@ -2,6 +2,11 @@
 
 This project is a small Python RPG demo with a simple turn-based combat system. This document covers the combat mechanics, controls, and developer information (tests, balance, and tuning).
 
+## Quick Start w/o python and required libs
+ - Install Python3: https://www.python.org/downloads/
+ - Install colorama: `pip install colorama`
+ - Install tkinter: `pip install tkinter`
+
 ## Quick Start
 - Run the control panel: `python3 main.py`
 - Run the tests: `python3 -m unittest discover -s tests -v`
