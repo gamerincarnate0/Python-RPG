@@ -10,7 +10,10 @@ from settings import *
 window = tk.Tk()
 
 window.title("Game Control Panel")
-window.geometry("600x1200")
+if GraphicalSettings.FULLSCREEN:
+    window.state('zoomed')
+else:
+    window.geometry(f"{GraphicalSettings.RESOLUTION[0]}x{GraphicalSettings.RESOLUTION[1]}")
 window.configure(bg="lightgrey")
 
 # Exit handler: autosave on exit
