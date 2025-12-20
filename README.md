@@ -3,8 +3,7 @@
 This project is a small Python RPG demo with a simple turn-based combat system. This document covers the combat mechanics, controls, and developer information (tests, balance, and tuning).
 
 ## Quick Start
-- Run the control panel: `python3 main.py`
-- Run the tests: `python3 -m unittest discover -s tests -v`
+- Extract and run the .exe, it should work out of the box. But if not, let me know!
 
 ## Controls (Game Control Panel)
 - **Display Player Stats**: prints current player stats.
