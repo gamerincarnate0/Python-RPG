@@ -1,6 +1,7 @@
 # Turn-based combat manager with optional Tkinter GUI support
 import random
 from functions import TextFuncs
+import player
 from player_helpers import get_attack_power, use_health_potion
 
 try:
@@ -17,9 +18,50 @@ RARITY_COLORS = {
     'legendary': 'orange',
 }
 
+# Small emoji decorations used in messages and summaries
+RARITY_EMOJIS = {
+    'common': '',
+    'uncommon': '✨',
+    'rare': '💠',
+    'epic': '🌟',
+    'legendary': '🔥',
+}
+
+SLOT_EMOJIS = {
+    'weapon': '⚔️',
+    'armor': '🛡️',
+    'accessory': '📿',
+}
+
 
 def _format_with_rarity(text, rarity):
     return f"{text} ({rarity})" if rarity else text
+
+
+def message_icon(text, rarity=None):
+    """Return a small emoji prefix for `text` or `rarity` to improve readability."""
+    # Rarity-based icon takes precedence for loot-related lines
+    if rarity:
+        return RARITY_EMOJIS.get(rarity, '')
+    # Infer from keywords
+    low = (text or '').lower()
+    if 'hit' in low and 'you' not in low or 'hits you' in low or 'you hit' in low:
+        return '⚔️'
+    if 'braces' in low or 'defend' in low or 'defending' in low:
+        return '🛡️'
+    if 'potion' in low or 'used a health potion' in low:
+        return '🧪'
+    if 'fled' in low or 'flee' in low:
+        return '🏃'
+    if 'defeated' in low or 'defeat' in low or 'you were defeated' in low:
+        return '💀'
+    if 'earned' in low or 'xp' in low or 'gained' in low:
+        return '✨'
+    if 'gold' in low or 'found' in low:
+        return '💰'
+    if 'loot' in low or 'acquired' in low or 'found loot' in low:
+        return '📦'
+    return ''
 
 
 def enemy_is_fightable(enemy_obj):
@@ -99,11 +141,19 @@ class Combat:
         If `rarity` is provided and a GUI text widget exists, the message line will be tagged
         and displayed in the color associated with that rarity.
         """
+        # Compute a small icon to improve readability
+        icon = message_icon(text, rarity)
+        if rarity and not icon:
+            # When rarity is provided but no emoji was chosen, prefer the rarity emoji
+            icon = RARITY_EMOJIS.get(rarity, '')
+
+        final_text = f"{icon} {text}" if icon else text
+
         if 'messages' in self._gui_widgets:
             txt = self._gui_widgets['messages']
             txt.configure(state='normal')
             start_index = txt.index('end')
-            txt.insert('end', text + '\n')
+            txt.insert('end', final_text + '\n')
 
             if rarity:
                 tag = f"rarity_{rarity}"
@@ -122,8 +172,8 @@ class Combat:
             txt.configure(state='disabled')
         else:
             if rarity:
-                text = _format_with_rarity(text, rarity)
-            TextFuncs.var_speed_print(text, 0.02, 0.04)
+                final_text = f"{icon} {_format_with_rarity(text, rarity)}" if icon else _format_with_rarity(text, rarity)
+            TextFuncs.var_speed_print(final_text, 0.02, 0.04)
 
     def _set_buttons_state(self, state):
         for k in ('attack_btn', 'defend_btn', 'potion_btn', 'flee_btn'):
@@ -282,6 +332,20 @@ class Combat:
             except Exception:
                 pass
 
+        # Autosave on victory (best-effort, non-fatal)
+        if player_won:
+            try:
+                from functions import save_game
+                saved = save_game()
+                if saved:
+                    try:
+                        # Use append_message so both GUI and CLI notify the user
+                        self.append_message("Game autosaved.")
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
         # Build a summary text for logging/presentation
         summary_lines = []
         if player_won:
@@ -294,8 +358,12 @@ class Combat:
             if gold:
                 summary_lines.append(f"Gold: {gold}")
             if loot:
-                # include rarity markers in the summary log
-                summary_lines.append("Loot: " + ", ".join(f"{it.name} ({getattr(it, 'rarity', 'common')})" for it in loot))
+                # include rarity markers + emoji in the summary log
+                def _format_loot_entry(it):
+                    r = getattr(it, 'rarity', 'common')
+                    icon = RARITY_EMOJIS.get(r, '')
+                    return f"{icon} {it.name} ({r})" if icon else f"{it.name} ({r})"
+                summary_lines.append("Loot: " + ", ".join(_format_loot_entry(it) for it in loot))
         else:
             summary_lines.append(f"Defeat vs {self.enemy.name}")
 
@@ -380,10 +448,29 @@ class Combat:
             btn_frame = tk.Frame(top)
             btn_frame.pack(pady=6)
 
-            # Equip button - only show for equipment
+            # Equip button - show comparison to current equipment for this slot
             if getattr(item, 'item_type', None) == 'equipment':
-                eq_btn = tk.Button(btn_frame, text='Equip', command=lambda itm=item: self._equip_and_refresh(itm, top))
-                eq_btn.grid(row=0, column=0, padx=4)
+                try:
+                    from player_helpers import get_item_slot, is_better
+                    slot = get_item_slot(item)
+                    current = player['equipment'].get(slot)
+                    # show current equipped in this slot (if any)
+                    cur_text = f"Current: {current.name} ({getattr(current, 'rarity', 'common')})" if current else "Current: (None)"
+                    tk.Label(top, text=cur_text).pack()
+                    # if the new item is better, highlight a recommendation
+                    recommended = is_better(item, current)
+                    if recommended:
+                        note = tk.Label(top, text="This item appears to be better than your current equipment.", fg='green')
+                        note.pack(pady=4)
+                        eq_text = 'Equip (Recommended)'
+                    else:
+                        eq_text = 'Equip'
+                    eq_btn = tk.Button(btn_frame, text=eq_text, command=lambda itm=item: self._equip_and_refresh(itm, top))
+                    eq_btn.grid(row=0, column=0, padx=4)
+                except Exception:
+                    # fallback to the simple Equip button
+                    eq_btn = tk.Button(btn_frame, text='Equip', command=lambda itm=item: self._equip_and_refresh(itm, top))
+                    eq_btn.grid(row=0, column=0, padx=4)
 
             sell_btn = tk.Button(btn_frame, text='Sell', command=lambda itm=item: self._sell_and_refresh(itm, top))
             sell_btn.grid(row=0, column=1, padx=4)
@@ -395,24 +482,54 @@ class Combat:
             TextFuncs.var_speed_print(item.description(), 0.02, 0.04)
 
     def _equip_and_refresh(self, item, window_ref):
+        """Equip an item and refresh UI; safe for use from tooltips."""
         try:
             from player_helpers import equip_item
             ok = equip_item(item)
-            if ok:
-                # refresh UI and close tooltip
-                TextFuncs.var_speed_print(f"{item.name} equipped.", 0.02, 0.04)
-                try:
-                    window_ref.destroy()
-                except Exception:
-                    pass
-                # call refresh callback if available
-                try:
-                    if getattr(self, '_on_refresh', None):
-                        self._on_refresh()
-                except Exception:
-                    pass
-            else:
+        except Exception:
+            ok = False
+
+        if not ok:
+            try:
                 TextFuncs.var_speed_print("Could not equip item (no space to unequip or invalid).", 0.02, 0.04)
+            except Exception:
+                pass
+            return
+
+        # success path
+        try:
+            TextFuncs.var_speed_print(f"{item.name} equipped.", 0.02, 0.04)
+        except Exception:
+            pass
+
+        try:
+            window_ref.destroy()
+        except Exception:
+            pass
+
+        # call refresh callback if available
+        try:
+            if getattr(self, '_on_refresh', None):
+                try:
+                    self._on_refresh()
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # refresh inventory window if present (close + reopen)
+        try:
+            parent = getattr(window_ref, 'master', None)
+            if parent and getattr(parent, 'winfo_exists', lambda: False)() and getattr(parent, 'title', lambda: '')() == 'Inventory':
+                try:
+                    parent.destroy()
+                except Exception:
+                    pass
+                try:
+                    from main import view_inventory_gui
+                    view_inventory_gui()
+                except Exception:
+                    pass
         except Exception:
             pass
 

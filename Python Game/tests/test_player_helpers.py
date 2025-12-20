@@ -31,7 +31,8 @@ class PlayerHelpersTestCase(unittest.TestCase):
 
     def test_add_loot_and_capacity(self):
         add_loot([iron_sword])
-        self.assertIn(iron_sword, self.p['inventory'])
+        # item may be auto-equipped if it's better than current; accept either outcome
+        self.assertTrue(iron_sword in self.p['inventory'] or self.p['equipment'].get('weapon') == iron_sword)
         # fill inventory and try to add another
         self.p['inventory'] = [health_potion] * self.p['inventory_capacity']
         add_loot([iron_sword])

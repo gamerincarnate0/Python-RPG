@@ -132,3 +132,40 @@ def generate_enemy(tier):
         e.loot.append(chosen)
 
     return e
+
+
+def generate_enemy_for_player(player_level: int):
+    """Generate an enemy scaled to the player's level.
+
+    The function picks a tier based on ranges of player levels and applies an
+    additional scaling multiplier to HP/attack/armor based on level so fights
+    remain challenging as players progress.
+    """
+    # Tier mapping: levels 1-3 -> tier1, 4-7 -> tier2, 8-11 -> tier3, 12-15 -> tier4, 16+ -> tier5
+    if player_level <= 3:
+        tier = 'tier1'
+    elif player_level <= 7:
+        tier = 'tier2'
+    elif player_level <= 11:
+        tier = 'tier3'
+    elif player_level <= 15:
+        tier = 'tier4'
+    else:
+        tier = 'tier5'
+
+    e = generate_enemy(tier)
+
+    # Apply a gentle per-level scaling (5% per level beyond level 1)
+    level_mult = 1.0 + max(0, (player_level - 1)) * 0.05
+
+    # Scale max_health, current health, attack_power, and armor
+    e.max_health = max(1, int(e.max_health * level_mult))
+    e.health = max(0, min(e.max_health, int(e.health * level_mult)))
+    e.attack_power = max(1, int(e.attack_power * level_mult))
+    e.armor = max(0, int(e.armor * level_mult))
+
+    # Optionally scale rewards slightly with level
+    e.xp_reward = max(1, int(e.xp_reward * (1.0 + (player_level - 1) * 0.02)))
+    e.gold_reward = max(0, int(e.gold_reward * (1.0 + (player_level - 1) * 0.02)))
+
+    return e

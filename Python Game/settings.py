@@ -1,8 +1,8 @@
 # Application Settings
 
 APP_NAME = "Python RPG"
-VERSION = "0.8.2"
-VERSION_NAME = "Combat and UI Update!"
+VERSION = "V1.0.0"
+VERSION_NAME = "Polished UI and Bug Fixes"
 DEBUG_MODE = True
 
 class UserInterfaceSettings:
@@ -12,7 +12,7 @@ class UserInterfaceSettings:
 
 class GraphicalSettings:
     RESOLUTION = (1920, 1080)
-    FULLSCREEN = False
+    FULLSCREEN = True
     VSYNC = True
 
 class WorldSettings:
@@ -28,7 +28,7 @@ class GameplaySettings:
     MAX_LEVEL = 50 # Maximum player level, 0 for unlimited
     STAT_POINTS_PER_LEVEL = 3  # Stat points awarded per level up
     SKILL_POINTS_PER_LEVEL = 1  # Skill points awarded per level up
-    LEVEL_REQUIREMENTS_BASE = 100  # Base XP required for level 1
+    LEVEL_REQUIREMENTS_BASE = 40  # Base XP required for level 1
     LEVEL_SCALAR = 1.2  # Exponential scaling factor for level XP requirements
 
 class PlayerSettings:

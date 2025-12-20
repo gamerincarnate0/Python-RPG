@@ -86,3 +86,26 @@ plate_armor = Item("Plate Armor", "equipment", {"armor": 15}, 120, rarity='epic'
 # Jewelry definitions
 silver_ring = Item("Silver Ring", "equipment", {"mana": 10}, 30, rarity='uncommon')
 gold_necklace = Item("Gold Necklace", "equipment", {"health": 20}, 60, rarity='rare')
+
+
+# Registry helpers for serialization/deserialization
+ITEM_REGISTRY = {
+    health_potion.name: health_potion,
+    mana_potion.name: mana_potion,
+    strength_elixir.name: strength_elixir,
+    agility_elixir.name: agility_elixir,
+    intelligence_elixir.name: intelligence_elixir,
+    iron_sword.name: iron_sword,
+    steel_axe.name: steel_axe,
+    magic_staff.name: magic_staff,
+    leather_armor.name: leather_armor,
+    chainmail_armor.name: chainmail_armor,
+    plate_armor.name: plate_armor,
+    silver_ring.name: silver_ring,
+    gold_necklace.name: gold_necklace,
+}
+
+
+def get_item_by_name(name):
+    """Return an Item instance by name from registry, or None if not found."""
+    return ITEM_REGISTRY.get(name)

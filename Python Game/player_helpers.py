@@ -58,8 +58,8 @@ def equip_item(item):
     if 'armor' in eff:
         player['armor_bonus'] = player.get('armor_bonus', 0) + eff['armor']
 
-    TextFuncs.var_speed_print(f"Equipped {item.name} in slot {slot}.", 0.02, 0.04)
-    return True
+    # Return the slot name as a truthy success value (UI layers may display messages)
+    return slot
 
 
 def unequip_item(slot):
@@ -80,10 +80,8 @@ def unequip_item(slot):
     if len(player['inventory']) < player.get('inventory_capacity', 0):
         player['inventory'].append(itm)
         player['equipment'][slot] = None
-        TextFuncs.var_speed_print(f"Unequipped {itm.name} to inventory.", 0.02, 0.04)
         return True
     else:
-        TextFuncs.var_speed_print("No inventory space to unequip item.", 0.02, 0.04)
         return False
 
 
@@ -104,7 +102,6 @@ def sell_item(item, sell_ratio=0.5):
 
     gold = int(item.value * sell_ratio)
     player['gold'] = player.get('gold', 0) + gold
-    TextFuncs.var_speed_print(f"Sold {item.name} for {gold} gold.", 0.02, 0.04)
     return gold
 
 
@@ -151,11 +148,72 @@ def add_gold(amount):
     TextFuncs.var_speed_print(f"Found {amount} gold.", 0.02, 0.04)
 
 
+# --- Item comparison / auto-equip helpers ----------------------------
+
+def get_item_slot(item):
+    """Return the equipment slot that this item would occupy."""
+    eff = getattr(item, 'effect', {}) or {}
+    if 'attack_power' in eff:
+        return 'weapon'
+    elif 'armor' in eff:
+        return 'armor'
+    else:
+        return 'accessory'
+
+
+def get_item_score(item):
+    """Return a heuristic numeric score for equipment comparison.
+
+    We weight attack_power and armor higher, and include other numeric effects.
+    """
+    eff = getattr(item, 'effect', {}) or {}
+    score = 0.0
+    score += eff.get('attack_power', 0) * 2.0
+    score += eff.get('armor', 0) * 1.5
+    for k, v in eff.items():
+        if k not in ('attack_power', 'armor'):
+            try:
+                score += float(v)
+            except Exception:
+                pass
+    rarity_bonus = {'common': 0.0, 'uncommon': 1.0, 'rare': 2.0, 'epic': 3.0, 'legendary': 5.0}
+    score += rarity_bonus.get(getattr(item, 'rarity', 'common'), 0.0) * 0.5
+    return score
+
+
+def is_better(item, current):
+    """Return True if `item` is strictly better than `current` based on score."""
+    if current is None:
+        return True
+    try:
+        return get_item_score(item) > get_item_score(current)
+    except Exception:
+        return False
+
+
 def add_loot(items):
-    """Try to add loot items to player's inventory; report if inventory full."""
+    """Try to add loot items to player's inventory; report if inventory full.
+
+    If an equipment item is acquired and it is better than the currently equipped
+    item for that slot, auto-equip it (best-effort)."""
     for it in items:
         if len(player.get('inventory', [])) < player.get('inventory_capacity', 10):
             player['inventory'].append(it)
             TextFuncs.var_speed_print(f"Acquired {it.name}.", 0.02, 0.04)
+
+            # Auto-equip equipment if it's better than the current
+            if getattr(it, 'item_type', None) == 'equipment':
+                slot = get_item_slot(it)
+                current = player['equipment'].get(slot)
+                try:
+                    if is_better(it, current):
+                        # equip_item will handle unequipping the previous item and
+                        # updating bonuses; we assume we have inventory space since
+                        # we just appended the new item.
+                        equip_item(it)
+                        TextFuncs.var_speed_print(f"Auto-equipped {it.name} (better than current {current.name if current else 'None'}).", 0.02, 0.04)
+                except Exception:
+                    # non-fatal if something goes wrong
+                    pass
         else:
             TextFuncs.var_speed_print(f"No inventory space for {it.name}.", 0.02, 0.04)
