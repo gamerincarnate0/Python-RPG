@@ -8,8 +8,7 @@ This project is a small Python RPG demo with a simple turn-based combat system. 
 ## Controls (Game Control Panel)
 - **Display Player Stats**: prints current player stats.
 - **Look at Inventory**: lists items in inventory.
-- **Generate Selected Tier Enemy**: spawns a random enemy of the chosen tier.
-- **Start Combat**: opens the combat window (non-blocking) where you can choose actions.
+- **Start Combat (Generate Selected Enemy)**: Generates an enemy scaling with player level and initiates combat.
 - **Use Health Potion**: uses a health potion from your inventory (if present).
 - **View Combat Log**: opens a window showing the persistent `combat_log.txt` file.
 - **Help**: shows this quick-help dialog in the UI.
@@ -26,15 +25,14 @@ This project is a small Python RPG demo with a simple turn-based combat system. 
 - Damage resolves as: attack_power - defender_armor/defense with a minimum of 1 damage.
 
 ## XP, Gold & Loot
-- Enemies grant XP and gold on defeat (scaled by tier and `GameplaySettings.GLOBAL_DIFFICULTY`).
+- Enemies grant XP and gold on defeat (scaled by tier).
 - Enemies have a small chance to drop consumables or equipment as loot.
 - Player levelling:
-  - XP thresholds are defined in `settings.py` (`GameplaySettings.LEVEL_REQUIREMENTS_BASE` and `LEVEL_SCALAR`).
+  - XP thresholds are default 100 and scale according to (100 * (1.2 ** (player_level - 1))).
   - Leveling grants modest stat increases and partially restores HP.
 
 ## Balance & Configuration
-- Difficulty scaling is controlled by `settings.GameplaySettings.GLOBAL_DIFFICULTY` (1–5).
-- Enemy stats and rewards scale with difficulty; tune the multiplier in `enemy.py`.
+- Enemy stats and rewards scale with difficulty (Setting already implemented behing the scenes. Currently not changeable in .exe as of V1.1.4 release).
 - Tests exist in `tests/` to verify AI decisions, damage floors, XP/level behavior, and logging.
 
 ## Development Notes
