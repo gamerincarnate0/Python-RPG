@@ -1,4 +1,4 @@
-# Python RPG — Combat & Gameplay Guide
+# Python RPG: Combat & Gameplay Guide
 
 This project is a small Python RPG demo with a simple turn-based combat system. This document covers the combat mechanics, controls, and developer information (tests, balance, and tuning).
 
