@@ -220,10 +220,19 @@ def start_combat():
     top.transient(window)
 
     def on_combat_end(won: bool):
+        global enemy
         if won:
             TextFuncs.var_speed_print("You won the combat!", 0.03, 0.05)
+            # clear the defeated enemy so it cannot be re-fought
+            enemy = None
         else:
             TextFuncs.var_speed_print("You were defeated...", 0.03, 0.05)
+
+    # prevent starting combat with an already defeated enemy
+    from combat import enemy_is_fightable
+    if not enemy_is_fightable(enemy):
+        TextFuncs.var_speed_print("Enemy is not fightable (it may already be defeated). Generate a new enemy.", 0.03, 0.05)
+        return
 
     combat = Combat(player, enemy)
     # pass a refresh callback so combat tooltips can update the main UI when equipping/selling
