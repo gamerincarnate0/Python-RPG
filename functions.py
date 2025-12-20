@@ -1,8 +1,5 @@
 import time
 import random
-from colorama import init, Fore, Style
-
-init(autoreset=False)
 
 class TextFuncs:
     # Optional GUI logger callback that can be set by the UI (main window).
@@ -15,22 +12,22 @@ class TextFuncs:
 
     @staticmethod
     def color_text(text, color):
-        colors = {
-        "red": Fore.RED,
-        "green": Fore.GREEN,
-        "blue": Fore.BLUE,
-        "yellow": Fore.YELLOW,
-        "magenta": Fore.MAGENTA,
-        "cyan": Fore.CYAN,
-        "white": Fore.WHITE,
-        "black": Fore.BLACK,
-        }
+        # colors = {
+        # "red": Fore.RED,
+        # "green": Fore.GREEN,
+        # "blue": Fore.BLUE,
+        # "yellow": Fore.YELLOW,
+        # "magenta": Fore.MAGENTA,
+        # "cyan": Fore.CYAN,
+        # "white": Fore.WHITE,
+        # "black": Fore.BLACK,
+        # }
     
         # Normalize input (lowercase)
-        color = color.lower()
+        # color = color.lower()
     
         # Get color from dict, or default to white if not found
-        color_code = colors.get(color, Fore.WHITE)
+        # color_code = colors.get(color, Fore.WHITE)
     
         # Return the colored text (autoreset handles reset automatically)
         return text
