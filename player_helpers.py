@@ -207,13 +207,14 @@ def add_loot(items):
                 current = player['equipment'].get(slot)
                 try:
                     if is_better(it, current):
-                        # equip_item will handle unequipping the previous item and
-                        # updating bonuses; we assume we have inventory space since
-                        # we just appended the new item.
                         equip_item(it)
                         TextFuncs.var_speed_print(f"Auto-equipped {it.name} (better than current {current.name if current else 'None'}).", 0.02, 0.04)
+                        try:
+                            from main import update_equipment_panel
+                            update_equipment_panel()
+                        except Exception:
+                            pass
                 except Exception:
-                    # non-fatal if something goes wrong
                     pass
         else:
             TextFuncs.var_speed_print(f"No inventory space for {it.name}.", 0.02, 0.04)
