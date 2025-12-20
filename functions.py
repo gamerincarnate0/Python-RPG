@@ -33,7 +33,7 @@ class TextFuncs:
         color_code = colors.get(color, Fore.WHITE)
     
         # Return the colored text (autoreset handles reset automatically)
-        return color_code + text + Style.RESET_ALL
+        return text
 
     @staticmethod
     def var_speed_print(text, delay, offset):

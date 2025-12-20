@@ -510,10 +510,6 @@ def start_combat():
     # pass a refresh callback so combat tooltips can update the main UI when equipping/selling
     combat.start_gui(combat_frame, on_end=on_combat_end, on_refresh=update_equipment_panel)
 
-button_use_health_potion = tk.Button(window, text="Use Health Potion", command=lambda: (health_potion.use(player), TextFuncs.var_speed_print("Health Potion used.", 0.03, 0.05)) if health_potion in player["inventory"] else TextFuncs.var_speed_print("No Health Potion in inventory.", 0.03, 0.05))
-button_use_health_potion.pack(pady=8)
-
-
 HELP_TEXT = (
     "Combat Help:\n"
     "- Click 'Start Combat' to generate an enemy appropriate for your level and open the combat window.\n"
@@ -574,12 +570,5 @@ def view_help_in_frame():
     txt.insert('end', HELP_TEXT)
     txt.configure(state='disabled')
     txt.pack(padx=8, pady=8)
-
-
-button_view_log = tk.Button(window, text="View Combat Log", command=view_combat_log)
-button_view_log.pack(pady=8)
-
-button_help = tk.Button(window, text="Help", command=view_help)
-button_help.pack(pady=8)
 
 window.mainloop()
