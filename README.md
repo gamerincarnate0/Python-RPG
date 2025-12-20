@@ -8,10 +8,12 @@ This project is a small Python RPG demo with a simple turn-based combat system. 
 ## Controls (Game Control Panel)
 - **Display Player Stats**: prints current player stats.
 - **Look at Inventory**: lists items in inventory.
-- **Start Combat (Generate Selected Enemy)**: Generates an enemy scaling with player level and initiates combat.
+- **Start Combat (Generate Enemy)**: Generates an enemy scaling with player level and initiates combat with it.
 - **Use Health Potion**: uses a health potion from your inventory (if present).
 - **View Combat Log**: opens a window showing the persistent `combat_log.txt` file.
 - **Help**: shows this quick-help dialog in the UI.
+- **Save Game**: Saves the current game state into a .json file.
+- **Load Game**: Loads the saved game state from the .json file.
 
 ## Combat Mechanics
 - Combat is **turn-based**. The player acts first, then the enemy.
