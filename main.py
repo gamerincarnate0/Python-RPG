@@ -463,6 +463,11 @@ def disable_nav(disabled=True):
 
 
 def start_combat():
+    # Prevent combat if player is dead
+    if player.get('health', 0) <= 0:
+        show_death_screen()
+        return
+
     from combat import Combat
     # Generate an enemy scaled to player level
     try:
@@ -472,16 +477,6 @@ def start_combat():
         TextFuncs.var_speed_print("Failed to generate enemy.", 0.03, 0.05)
         return
 
-    # Report generation
-    '''TextFuncs.var_speed_print(
-        f"Generated enemy: {new_enemy.name} with "
-        + TextFuncs.color_text(f"{new_enemy.health} HP", "red")
-        + " and "
-        + TextFuncs.color_text(f"{new_enemy.attack_power} AP", "blue"),
-        0.03,
-        0.05,
-    )'''
-
     # Render combat inside content_frame as a modal-like panel
     _clear_content_frame()
     disable_nav(True)
@@ -490,7 +485,6 @@ def start_combat():
         combat_frame = tk.Frame(content_frame, relief='groove', bd=2)
         combat_frame.pack(fill='both', expand=True, padx=6, pady=6)
     except Exception:
-        # If the Tk application is gone (tests may have destroyed it), re-enable nav and abort
         disable_nav(False)
         return
 
@@ -499,16 +493,30 @@ def start_combat():
         if won:
             TextFuncs.var_speed_print("You won the combat!", 0.03, 0.05)
         else:
+            # Player death consequences
             TextFuncs.var_speed_print("You were defeated...", 0.03, 0.05)
-        # clear combat frame after short delay
+            player['experience'] = 0
+            player['level'] = max(1, player['level'] - 1)
+            show_death_screen()
+            return
         try:
             combat_frame.after(500, lambda: _clear_content_frame())
         except Exception:
             pass
 
     combat = Combat(player, new_enemy)
-    # pass a refresh callback so combat tooltips can update the main UI when equipping/selling
     combat.start_gui(combat_frame, on_end=on_combat_end, on_refresh=update_equipment_panel)
+def show_death_screen():
+    _clear_content_frame()
+    disable_nav(True)
+    death_frame = tk.Frame(content_frame, relief='ridge', bd=3, bg='black')
+    death_frame.pack(fill='both', expand=True, padx=30, pady=30)
+    lbl = tk.Label(death_frame, text="You have died!", fg='red', bg='black', font=(None, 20, 'bold'))
+    lbl.pack(pady=20)
+    info = tk.Label(death_frame, text=f"Level reset to {player['level']}, XP set to 0.", fg='white', bg='black', font=(None, 14))
+    info.pack(pady=10)
+    btn = tk.Button(death_frame, text="Continue", font=(None, 14, 'bold'), command=lambda: (death_frame.destroy(), disable_nav(False)))
+    btn.pack(pady=20)
 
 HELP_TEXT = (
     "Combat Help:\n"

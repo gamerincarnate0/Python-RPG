@@ -218,7 +218,7 @@ class Combat:
         elif action == 'flee':
             if random.random() < 0.5:
                 self.append_message("You fled successfully.")
-                self._end_combat(True)
+                self._end_combat('fled')
                 return
             else:
                 self.append_message("Flee failed!")
@@ -305,8 +305,11 @@ class Combat:
     def _end_combat(self, player_won):
         self._set_buttons_state('disabled')
 
-        # Award XP/gold/loot for victories
-        if player_won:
+        # Determine if player fled (new logic: player_won can be True, False, or 'fled')
+        fled = player_won == 'fled'
+
+        # Award XP/gold/loot for victories only if not fled
+        if player_won is True and not fled:
             try:
                 from player_helpers import add_experience, add_gold, add_loot
                 xp = getattr(self.enemy, 'xp_reward', 0)
@@ -333,8 +336,8 @@ class Combat:
             except Exception:
                 pass
 
-        # Autosave on victory (best-effort, non-fatal)
-        if player_won:
+        # Autosave on victory (best-effort, non-fatal), but not on flee
+        if player_won is True and not fled:
             try:
                 from functions import save_game
                 saved = save_game()
@@ -349,7 +352,7 @@ class Combat:
 
         # Build a summary text for logging/presentation
         summary_lines = []
-        if player_won:
+        if player_won is True and not fled:
             xp = getattr(self.enemy, 'xp_reward', 0)
             gold = getattr(self.enemy, 'gold_reward', 0)
             loot = getattr(self.enemy, 'loot', []) or []
@@ -365,6 +368,8 @@ class Combat:
                     icon = RARITY_EMOJIS.get(r, '')
                     return f"{icon} {it.name} ({r})" if icon else f"{it.name} ({r})"
                 summary_lines.append("Loot: " + ", ".join(_format_loot_entry(it) for it in loot))
+        elif fled:
+            summary_lines.append(f"Fled from {self.enemy.name}")
         else:
             summary_lines.append(f"Defeat vs {self.enemy.name}")
 
@@ -403,8 +408,9 @@ class Combat:
                     txt.config(state='disabled')
                     txt.pack(padx=6, pady=4)
 
-                    # If there is loot, show clickable buttons that open item tooltips
-                    if loot:
+                    # If there is loot, show clickable buttons that open item tooltips (only if not fled)
+                    loot = getattr(self.enemy, 'loot', []) or []
+                    if player_won is True and not fled and loot:
                         loot_frame = tk.Frame(frm)
                         loot_frame.pack(pady=4)
                         tk.Label(loot_frame, text='Loot:').grid(row=0, column=0, padx=4)

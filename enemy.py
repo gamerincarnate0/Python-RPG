@@ -115,17 +115,28 @@ def generate_enemy(tier):
     if random.random() < 0.25:
         e.inventory.append(health_potion)
 
-    # Loot table with weights per tier (rarer items have lower weights)
+    # Expanded loot table with more items and better variety
+    from items import mana_potion, strength_elixir, agility_elixir, intelligence_elixir, magic_staff, chainmail_armor, silver_ring, gold_necklace
     LOOT_TABLE = {
-        "tier1": [(health_potion, 70), (leather_armor, 10), (iron_sword, 5)],
-        "tier2": [(health_potion, 60), (leather_armor, 15), (iron_sword, 12), (steel_axe, 8)],
-        "tier3": [(health_potion, 40), (leather_armor, 20), (iron_sword, 15), (steel_axe, 15), (plate_armor, 5)],
-        "tier4": [(health_potion, 30), (leather_armor, 20), (iron_sword, 20), (steel_axe, 20), (plate_armor, 10)],
-        "tier5": [(health_potion, 20), (leather_armor, 15), (iron_sword, 20), (steel_axe, 20), (plate_armor, 25)],
+        "tier1": [
+            (health_potion, 60), (mana_potion, 20), (leather_armor, 10), (iron_sword, 5), (strength_elixir, 5)
+        ],
+        "tier2": [
+            (health_potion, 40), (mana_potion, 20), (leather_armor, 10), (iron_sword, 10), (steel_axe, 7), (strength_elixir, 6), (agility_elixir, 5), (silver_ring, 2)
+        ],
+        "tier3": [
+            (health_potion, 25), (mana_potion, 15), (leather_armor, 8), (chainmail_armor, 10), (iron_sword, 8), (steel_axe, 10), (plate_armor, 5), (strength_elixir, 6), (agility_elixir, 5), (intelligence_elixir, 5), (magic_staff, 4), (silver_ring, 3), (gold_necklace, 2)
+        ],
+        "tier4": [
+            (health_potion, 15), (mana_potion, 10), (chainmail_armor, 10), (plate_armor, 10), (iron_sword, 6), (steel_axe, 8), (magic_staff, 7), (strength_elixir, 5), (agility_elixir, 5), (intelligence_elixir, 5), (silver_ring, 4), (gold_necklace, 4)
+        ],
+        "tier5": [
+            (health_potion, 10), (mana_potion, 8), (chainmail_armor, 8), (plate_armor, 15), (iron_sword, 5), (steel_axe, 7), (magic_staff, 10), (strength_elixir, 5), (agility_elixir, 5), (intelligence_elixir, 5), (silver_ring, 5), (gold_necklace, 6)
+        ],
     }
 
     # chance to drop an item increases with difficulty
-    drop_chance = 0.12 * multiplier
+    drop_chance = 0.2 * multiplier
     if random.random() < drop_chance:
         choices, weights = zip(*LOOT_TABLE.get(tier, LOOT_TABLE["tier1"]))
         chosen = random.choices(choices, weights=weights, k=1)[0]

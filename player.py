@@ -6,7 +6,7 @@ from functions import TextFuncs
 player = {
     "name": PlayerSettings.PLAYER_NAME,
     "level": 1,
-    "health": 100,
+    "health": 10,
     "max_health": 100,
     "mana": 50,
     "max_mana": 50,
