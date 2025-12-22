@@ -1,4 +1,5 @@
 import tkinter as tk
+import math
 
 from combat import RARITY_COLORS, RARITY_EMOJIS
 from enemy import *
@@ -193,6 +194,25 @@ def _sell_and_refresh_main(item, window_ref):
     except Exception:
         pass
 
+def rest_and_heal():
+    """Rest at an inn to heal and recover."""
+    try:
+        cost_to_heal = player['max_health'] - player['health']
+        if player['gold'] < cost_to_heal:
+            TextFuncs.var_speed_print("You don't have enough gold to heal.", 0.02, 0.04)
+            return
+        elif player['health'] >= player['max_health']:
+            TextFuncs.var_speed_print("You are already fully healed.", 0.02, 0.04)
+            return
+        elif player.get('health', 0) <= 0:
+            TextFuncs.var_speed_print("You are already dead.", 0.02, 0.04)
+            return
+        player['health'] = player['max_health']
+        player['gold'] -= cost_to_heal
+        TextFuncs.var_speed_print(f"You have been fully healed for {cost_to_heal} gold.", 0.02, 0.04)
+    except Exception:
+        pass
+
 # --- Navigation: single-window content area --------------------------------
 nav_frame = tk.Frame(window)
 nav_frame.pack(pady=6)
@@ -207,12 +227,16 @@ btn_start = tk.Button(nav_frame, text='Start Combat (Generate Enemy)', command=l
 btn_start.grid(row=0, column=1, padx=4)
 nav_buttons['start'] = btn_start
 
+btn_rest = tk.Button(nav_frame, text='Rest and Heal', command=lambda: rest_and_heal())
+btn_rest.grid(row=0, column=2, padx=4)
+nav_buttons['rest'] = btn_rest
+
 btn_log = tk.Button(nav_frame, text='Combat Log', command=lambda: view_combat_log_in_frame())
-btn_log.grid(row=0, column=2, padx=4)
+btn_log.grid(row=0, column=3, padx=4)
 nav_buttons['log'] = btn_log
 
 btn_help = tk.Button(nav_frame, text='Help', command=lambda: view_help_in_frame())
-btn_help.grid(row=0, column=3, padx=4)
+btn_help.grid(row=0, column=4, padx=4)
 nav_buttons['help'] = btn_help
 
 # content frame - all views render into here
