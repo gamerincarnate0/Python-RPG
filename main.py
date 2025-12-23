@@ -533,6 +533,7 @@ def start_combat():
 
     combat = Combat(player, new_enemy)
     combat.start_gui(combat_frame, on_end=on_combat_end, on_refresh=update_equipment_panel)
+    
 def show_death_screen():
     _clear_content_frame()
     disable_nav(True)
@@ -542,7 +543,7 @@ def show_death_screen():
     lbl.pack(pady=20)
     info = tk.Label(death_frame, text=f"Level reset to {player['level']}, XP set to 0.", fg='white', bg='black', font=(None, 14))
     info.pack(pady=10)
-    btn = tk.Button(death_frame, text="Continue", font=(None, 14, 'bold'), command=lambda: (death_frame.destroy(), disable_nav(False)))
+    btn = tk.Button(death_frame, text="Continue", font=(None, 14, 'bold'), command=lambda: (death_frame.destroy(), disable_nav(False), player.update({'health': player['max_health']})))
     btn.pack(pady=20)
 
 HELP_TEXT = (
