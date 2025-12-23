@@ -7,6 +7,9 @@ from player import *
 from items import *
 from functions import *
 from settings import *
+from plugins.loader import load_plugins
+
+PLUGIN_REGISTRY = load_plugins()
 
 window = tk.Tk()
 
@@ -533,7 +536,7 @@ def start_combat():
 
     combat = Combat(player, new_enemy)
     combat.start_gui(combat_frame, on_end=on_combat_end, on_refresh=update_equipment_panel)
-    
+
 def show_death_screen():
     _clear_content_frame()
     disable_nav(True)

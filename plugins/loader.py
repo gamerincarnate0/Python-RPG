@@ -1,9 +1,15 @@
 import json
 from pathlib import Path
+import sys
 from plugins.registry import PluginRegistry
 from plugins.schemas import validate_enemy, validate_item
 
-PLUGIN_ROOT = Path("plugins")
+def get_plugin_root():
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable).parent / "plugins"
+    return Path(__file__).resolve().parent.parent / "plugins"
+
+PLUGIN_ROOT = get_plugin_root()
 
 def load_plugins() -> PluginRegistry:
     registry = PluginRegistry()
