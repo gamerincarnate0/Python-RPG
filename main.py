@@ -502,7 +502,7 @@ def start_combat():
     # Generate an enemy scaled to player level
     try:
         from enemy import generate_enemy_for_player
-        new_enemy = generate_enemy_for_player(player.get('level', 1))
+        new_enemy = generate_enemy_for_player(player.get('level', 1), PLUGIN_REGISTRY)
     except Exception:
         TextFuncs.var_speed_print("Failed to generate enemy.", 0.03, 0.05)
         return
