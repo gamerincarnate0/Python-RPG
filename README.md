@@ -34,7 +34,7 @@ This project is a small Python RPG demo with a simple turn-based combat system. 
   - Leveling grants modest stat increases and partially restores HP.
 
 ## Balance & Configuration
-- Enemy stats and rewards scale with difficulty (Setting already implemented behing the scenes. Currently not changeable in .exe as of V1.1.4 release).
+- Enemy stats and rewards scale with difficulty (Setting already implemented behing the scenes. Currently not changeable in .exe as of V1.2.2 release).
 - Tests exist in `tests/` to verify AI decisions, damage floors, XP/level behavior, and logging.
 
 ## Development Notes
